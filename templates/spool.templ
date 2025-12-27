@@ -1,0 +1,68 @@
+package templates
+
+templ Spool() {
+	@baseWithActiveLink("Spools - Filament Chamber", spoolContent(), "spool")
+}
+
+templ spoolContent() {
+	<div class="px-4 py-6 sm:px-0">
+		<div class="bg-white rounded-lg shadow p-6">
+			<h2 class="text-2xl font-bold text-gray-900 mb-4">Filament Spools</h2>
+			<p class="text-gray-600 mb-6">
+				Manage your filament spools and inventory here.
+			</p>
+			<div class="mb-4">
+				<button
+					class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+					hx-get="/api/spools"
+					hx-target="#spools-result"
+					hx-swap="innerHTML"
+				>
+					Refresh Spools
+				</button>
+			</div>
+			<div id="spools-result" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+				<p class="text-gray-500">Click the button above to test HTMX test</p>
+			</div>
+			<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+				<!-- Example Spool Card -->
+				<div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+					<div class="flex items-center justify-between mb-3">
+						<h3 class="font-semibold text-gray-800">PLA - Red</h3>
+						<span class="px-2 py-1 bg-green-100 text-green-800 text-xs font-semibold rounded">Active</span>
+					</div>
+					<div class="space-y-2 text-sm text-gray-600">
+						<div class="flex justify-between">
+							<span>Weight:</span>
+							<span class="font-medium">750g / 1000g</span>
+						</div>
+						<div class="flex justify-between">
+							<span>Temperature:</span>
+							<span class="font-medium">210°C</span>
+						</div>
+					</div>
+					<div class="mt-4">
+						<div class="w-full bg-gray-200 rounded-full h-2">
+							<div class="bg-blue-600 h-2 rounded-full" style="width: 75%"></div>
+						</div>
+					</div>
+				</div>
+				<!-- Placeholder for more spools -->
+				<div class="border border-dashed border-gray-300 rounded-lg p-4 flex items-center justify-center min-h-32">
+					<button class="text-gray-400 hover:text-gray-600 transition-colors">
+						<svg class="w-12 h-12 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+						</svg>
+						<span class="text-sm">Add Spool</span>
+					</button>
+				</div>
+			</div>
+		</div>
+	</div>
+}
+
+templ SpoolsResult() {
+	<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+		<p class="text-gray-500">Click the button above to test HTMX test 123</p>
+	</div>
+}

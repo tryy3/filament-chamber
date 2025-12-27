@@ -1,0 +1,13 @@
+{
+  "name": "filament-chamber-server",
+  "version": "1.0.0",
+  "description": "Filament chamber web server assets",
+  "scripts": {
+    "build:css": "tailwindcss -i ./input.css -o ./static/css/styles.css",
+    "watch:css": "tailwindcss -i ./input.css -o ./static/css/styles.css --watch"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.4.0"
+  }
+}
+

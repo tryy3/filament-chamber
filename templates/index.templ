@@ -1,0 +1,32 @@
+package templates
+
+templ Index() {
+	@baseWithActiveLink("Home - Filament Chamber", indexContent(), "home")
+}
+
+templ indexContent() {
+	<div class="px-4 py-6 sm:px-0">
+		<div class="bg-white rounded-lg shadow p-6">
+			<h2 class="text-2xl font-bold text-gray-900 mb-4">Welcome to Filament Chamber</h2>
+			<p class="text-gray-600 mb-6">
+				This is a simple HTMX-powered web interface for managing your filament chamber LEDs.
+			</p>
+			<div class="space-y-4">
+				<div>
+					<button
+						class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+						hx-get="/api/demo"
+						hx-target="#demo-result"
+						hx-swap="innerHTML"
+					>
+						Test HTMX
+					</button>
+				</div>
+				<div id="demo-result" class="p-4 bg-gray-50 rounded border border-gray-200 min-h-16">
+					<p class="text-gray-500">Click the button above to test HTMX</p>
+				</div>
+			</div>
+		</div>
+	</div>
+}
+

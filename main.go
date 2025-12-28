@@ -32,6 +32,7 @@ func main() {
 	// API endpoints
 	mux.HandleFunc("/api/demo", handlers.DemoHandler)
 	mux.HandleFunc("/api/spools", handlers.SpoolsAPIHandler)
+	mux.HandleFunc("/api/spools/filters", handlers.FilterMetadataHandler)
 
 	// Static files (CSS, JS)
 	fs := http.FileServer(http.Dir("./static"))

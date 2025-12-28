@@ -32,7 +32,8 @@ func HomeHandler(w http.ResponseWriter, r *http.Request) {
 // SpoolHandler serves the spool management page
 func SpoolHandler(w http.ResponseWriter, r *http.Request) {
 	// Render the spool template
-	component := templates.Spool()
+	materials, brands := GetFilterMetadata()
+	component := templates.Spool(materials, brands)
 	err := component.Render(r.Context(), w)
 	if err != nil {
 		http.Error(w, "Error rendering template", http.StatusInternalServerError)
@@ -122,7 +123,7 @@ func matchesFilters(spool spoolman.Spool, filters SpoolFilters) bool {
 // applyFilters filters spools and returns filtered list and ID map
 func applyFilters(spools *[]spoolman.Spool, filters SpoolFilters) (*[]spoolman.Spool, map[int]bool) {
 	filteredIDs := make(map[int]bool)
-	
+
 	// If no filters, return all spools and populate all IDs
 	if filters.isEmpty() {
 		for i := range *spools {
@@ -180,11 +181,11 @@ func getUniqueBrands(spools *[]spoolman.Spool) []string {
 func SpoolsAPIHandler(w http.ResponseWriter, r *http.Request) {
 	log.Printf("Finding spools")
 	w.Header().Set("Content-Type", "application/json")
-	
+
 	// Parse filters from request
 	filters := parseFiltersFromRequest(r)
 	log.Printf("Applied filters: %+v", filters)
-	
+
 	// Fetch all spools
 	spools, err := spoolman.FindSpools()
 	if err != nil {
@@ -216,6 +217,17 @@ func SpoolsAPIHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Error rendering template", http.StatusInternalServerError)
 		return
 	}
+}
+
+func GetFilterMetadata() (materials []string, brands []string) {
+	spools, err := spoolman.FindSpools()
+	if err != nil {
+		log.Printf("Error finding spools: %+v", err)
+		return
+	}
+	materials = getUniqueMaterials(spools)
+	brands = getUniqueBrands(spools)
+	return materials, brands
 }
 
 // FilterMetadataHandler returns available filter options

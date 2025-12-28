@@ -1,6 +1,24 @@
 // Custom JavaScript for Filament Chamber
 console.log('Filament Chamber initialized');
 
+// Dark mode toggle functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const themeToggle = document.getElementById('theme-toggle');
+    
+    if (themeToggle) {
+        themeToggle.addEventListener('click', function() {
+            // Toggle dark class on html element
+            if (document.documentElement.classList.contains('dark')) {
+                document.documentElement.classList.remove('dark');
+                localStorage.theme = 'light';
+            } else {
+                document.documentElement.classList.add('dark');
+                localStorage.theme = 'dark';
+            }
+        });
+    }
+});
+
 // Sidebar toggle functionality
 document.addEventListener('DOMContentLoaded', function() {
     const sidebar = document.getElementById('sidebar');
@@ -72,3 +90,34 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
+var nfc = {
+  // (A) INIT
+  hTxt : null, // html data to write
+  hWrite : null, // html write button
+  hRead : null, // html read button
+  hMsg : null, // html "console messages"
+  init : () => {
+    // (A1) GET HTML ELEMENTS
+    nfc.hTxt = document.getElementById("demoT"),
+    nfc.hWrite = document.getElementById("demoW"),
+    nfc.hRead = document.getElementById("demoR"),
+    nfc.hMsg = document.getElementById("demoMSG");
+ 
+    // (A2) FEATURE CHECK + GET PERMISSION
+    if ("NDEFReader" in window) {
+      nfc.logger("Ready");
+      nfc.hWrite.disabled = false;
+      nfc.hRead.disabled = false;
+      nfc.hReadOnly.disabled = false;
+    } else { nfc.logger("Web NFC is not supported on this browser."); }
+  },
+ 
+  // (B) HELPER - DISPLAY LOG MESSAGE
+  logger : msg => {
+    let row = document.createElement("div");
+    row.innerHTML = msg;
+    nfc.hMsg.appendChild(row);
+  },
+  // ...
+};
+window.onload = nfc.init;

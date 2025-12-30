@@ -96,16 +96,19 @@ PORT=3000 go run .
 For the best development experience, run these commands in separate terminals:
 
 **Terminal 1** - Watch and rebuild Tailwind CSS:
+
 ```bash
 npm run watch:css
 ```
 
 **Terminal 2** - Watch and regenerate Templ templates:
+
 ```bash
 templ generate --watch
 ```
 
 **Terminal 3** - Run the Go server (with auto-restart using a tool like `air` or manually restart after changes):
+
 ```bash
 go run .
 ```
@@ -152,10 +155,17 @@ server/
 - `GET /api/demo` - Example HTMX endpoint
 - `GET /static/*` - Static files (CSS, JS, images)
 
+## NFC / RFID docs (Filament inventory workflows)
+
+- `server/docs/nfc/openprinttag.md` - OPT (OpenPrintTag) NFC payload summary (internal reference)
+- `server/docs/nfc/openprinttag-field-reference.md` - OPT fields (generated tables from vendored snapshot)
+- `server/docs/nfc/openprinttag-enum-reference.md` - OPT enums (generated tables from vendored snapshot)
+- `server/docs/nfc/filament-chamber-records.md` - Filament-Chamber custom NDEF records (Spoolman linkage)
+- `server/docs/nfc/workflows.md` - Scan/update workflows (spool → location → Spoolman update)
+
 ## Notes
 
 - The LED manager functionality is preserved and can be integrated with web endpoints as needed
 - HTMX is loaded from CDN (unpkg.com) for simplicity
 - Tailwind CSS must be rebuilt when template classes change
 - Templ files must be regenerated when modified
-

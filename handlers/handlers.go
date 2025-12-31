@@ -41,6 +41,16 @@ func SpoolHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// AdminHandler serves the admin/testing tools page
+func AdminHandler(w http.ResponseWriter, r *http.Request) {
+	component := templates.Admin()
+	err := component.Render(r.Context(), w)
+	if err != nil {
+		http.Error(w, "Error rendering template", http.StatusInternalServerError)
+		return
+	}
+}
+
 // DemoHandler is an example HTMX endpoint that returns HTML
 func DemoHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")

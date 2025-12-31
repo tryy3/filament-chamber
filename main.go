@@ -28,6 +28,8 @@ func main() {
 
 	// Spool management page
 	mux.HandleFunc("/spool", handlers.SpoolHandler)
+	// Admin/testing tools page
+	mux.HandleFunc("/admin", handlers.AdminHandler)
 
 	// API endpoints
 	mux.HandleFunc("/api/demo", handlers.DemoHandler)

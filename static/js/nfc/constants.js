@@ -16,8 +16,15 @@
   // Defaults tuned for NTAG215-ish capacities.
   // You can override per-init call.
   const DEFAULTS = {
-    OPT_PAYLOAD_BYTES: 360,
-    AUX_REGION_BYTES: 128,
+    // IMPORTANT: Many Type 2 tag stacks behave poorly when the NDEF TLV length
+    // needs to expand beyond 1 byte (>255 total message bytes).
+    // A spool tag writes TWO MIME records; keep the OPT payload small so the
+    // combined NDEF message stays under 255 bytes on common Android stacks.
+    // Keep comfortably under the 255-byte boundary for Type 2 NDEF TLV length.
+    OPT_PAYLOAD_BYTES: 80,
+    // Start with no aux allocation by default to maximize compatibility.
+    // You can re-init later with AUX if you decide to store consumed_weight on-tag.
+    AUX_REGION_BYTES: 0,
     SCAN_TIMEOUT_MS: 15_000,
   };
 

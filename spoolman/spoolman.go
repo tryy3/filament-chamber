@@ -28,7 +28,7 @@ func FindSpools() (*[]Spool, error) {
 		return nil, err
 	}
 	if rsp.StatusCode() != http.StatusOK {
-		log.Fatalf("Expected HTTP 200 but received %d", rsp.StatusCode())
+		log.Printf("Expected HTTP 200 but received %d", rsp.StatusCode())
 		return nil, fmt.Errorf("expected HTTP 200 but received %d", rsp.StatusCode())
 	}
 	return rsp.JSON200, nil

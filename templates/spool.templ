@@ -4,14 +4,6 @@ import "github.com/tryy3/filament-chamber/spoolman"
 import "fmt"
 
 templ Spool(materials []string, brands []string) {
-	<!-- (A) NFC TAG ACTIONS -->
-	<div id="demoNFC" class="bg-white dark:bg-gray-800 shadow p-4 transition-colors duration-200">
-		<input type="text" id="demoT" value="Hello World" required class="border border-gray-300 dark:border-gray-600 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 transition-colors"/>
-		<input type="button" id="demoW" value="Write" disabled onclick="nfc.write();" class="bg-blue-500 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-800 text-white font-bold py-2 px-4 rounded transition-colors"/>
-		<input type="button" id="demoR" value="Read" disabled onclick="nfc.read()" class="bg-gray-500 hover:bg-gray-700 dark:bg-gray-600 dark:hover:bg-gray-800 text-white font-bold py-2 px-4 rounded transition-colors"/>
-	</div>
-	<!-- (B) "CONSOLE MESSAGES" -->
-	<div id="demoMSG" class="bg-white dark:bg-gray-800 shadow p-4 transition-colors duration-200"></div>
 	@baseWithActiveLink("Spools - Filament Chamber", spoolContent(materials, brands), "spool")
 }
 

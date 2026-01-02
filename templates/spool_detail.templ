@@ -1,0 +1,103 @@
+package templates
+
+import (
+	"fmt"
+
+	"github.com/tryy3/filament-chamber/spoolman"
+)
+
+templ SpoolDetail(spool *spoolman.Spool) {
+	@baseWithActiveLink(fmt.Sprintf("Spool #%d - Filament Chamber", spool.Id), SpoolDetailContent(spool), "spool")
+}
+
+templ SpoolDetailContent(spool *spoolman.Spool) {
+	<div class="bg-white dark:bg-gray-800 shadow p-4 transition-colors duration-200">
+		<div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+			<div class="flex items-center gap-3">
+				<div
+					class="w-12 h-12 rounded-full border border-gray-300 dark:border-gray-600 flex-shrink-0"
+					style={ fmt.Sprintf("background-color: #%s", spoolman.GetFilamentColorHex(spool.Filament)) }
+					title={ fmt.Sprintf("Color: #%s", spoolman.GetFilamentColorHex(spool.Filament)) }
+				></div>
+				<div>
+					<h2 class="text-2xl font-bold text-gray-900 dark:text-gray-100">
+						{ spoolman.GetFilamentBrand(spool.Filament) } — { spoolman.GetFilamentName(spool.Filament) }
+					</h2>
+					<div class="mt-1 flex items-center gap-2">
+						<span class="px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-300 text-xs font-semibold rounded">
+							Spool #{ fmt.Sprintf("%d", spool.Id) }
+						</span>
+						<span class="text-sm text-gray-600 dark:text-gray-400">
+							{ spoolman.GetFilamentMaterial(spool.Filament) }
+						</span>
+					</div>
+				</div>
+			</div>
+			<div class="flex items-center gap-2">
+				<a
+					href="/spool"
+					class="inline-flex items-center rounded bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 px-3 py-2 text-sm font-medium text-gray-800 dark:text-gray-100 transition-colors"
+				>
+					Back to spools
+				</a>
+				<a
+					href={ fmt.Sprintf("https://spoolman.tryy3.dev/api/v1/spool/%d", spool.Id) }
+					target="_blank"
+					rel="noopener noreferrer"
+					class="inline-flex items-center rounded bg-transparent hover:bg-gray-100 dark:hover:bg-gray-700 px-3 py-2 text-sm font-medium text-blue-700 dark:text-blue-300 transition-colors"
+					title="Opens the Spoolman API view for this spool (raw JSON)"
+				>
+					View in Spoolman
+				</a>
+			</div>
+		</div>
+		<div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+			<div class="rounded-lg border border-gray-200 dark:border-gray-700 p-4 bg-gray-50 dark:bg-gray-900/20">
+				<h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-3">Details</h3>
+				<div class="space-y-2 text-sm text-gray-700 dark:text-gray-300">
+					<div class="flex justify-between gap-4">
+						<span class="text-gray-500 dark:text-gray-400">Material</span>
+						<span class="font-medium">{ spoolman.GetFilamentMaterial(spool.Filament) }</span>
+					</div>
+					<div class="flex justify-between gap-4">
+						<span class="text-gray-500 dark:text-gray-400">Color</span>
+						<span class="font-medium">#{ spoolman.GetFilamentColorHex(spool.Filament) }</span>
+					</div>
+					<div class="flex justify-between gap-4">
+						<span class="text-gray-500 dark:text-gray-400">Location</span>
+						<span class="font-medium">{ spoolman.GetSpoolLocation(*spool) }</span>
+					</div>
+					<div class="flex justify-between gap-4">
+						<span class="text-gray-500 dark:text-gray-400">Weight</span>
+						<span class="font-medium">
+							{ fmt.Sprintf("%.0fg / %.0fg", spoolman.GetSpoolRemainingWeight(*spool), spoolman.GetSpoolInitialWeight(*spool)) }
+						</span>
+					</div>
+					<div class="flex justify-between gap-4">
+						<span class="text-gray-500 dark:text-gray-400">Last Used</span>
+						<span class="font-medium">{ spoolman.GetSpoolLastUsed(*spool) }</span>
+					</div>
+				</div>
+			</div>
+			<div class="rounded-lg border border-gray-200 dark:border-gray-700 p-4 bg-gray-50 dark:bg-gray-900/20">
+				<h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-3">NFC</h3>
+				<p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
+					Write this spool reference to an OpenPrintTag spool tag. Your browser will prompt for NFC permissions if needed.
+				</p>
+				<div class="flex items-center gap-2">
+					<button
+						id="fc-write-spool-tag"
+						data-spool-id={ fmt.Sprintf("%d", spool.Id) }
+						class="bg-blue-500 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-800 text-white font-bold py-2 px-4 rounded transition-colors"
+						type="button"
+					>
+						Write spool to tag
+					</button>
+				</div>
+				<p class="mt-3 text-xs text-gray-500 dark:text-gray-400">
+					Tip: keep the tag close to your phone during the write.
+				</p>
+			</div>
+		</div>
+	</div>
+}

@@ -28,6 +28,8 @@ func main() {
 
 	// Spool management page
 	mux.HandleFunc("/spool", handlers.SpoolHandler)
+	// Spool detail page (must be more specific than /spool)
+	mux.HandleFunc("/spool/", handlers.SpoolDetailHandler)
 	// Admin/testing tools page
 	mux.HandleFunc("/admin", handlers.AdminHandler)
 
@@ -35,6 +37,7 @@ func main() {
 	mux.HandleFunc("/api/demo", handlers.DemoHandler)
 	mux.HandleFunc("/api/spools", handlers.SpoolsAPIHandler)
 	mux.HandleFunc("/api/spools/filters", handlers.FilterMetadataHandler)
+	mux.HandleFunc("/api/spool/", handlers.SpoolJSONHandler)
 
 	// Static files (CSS, JS)
 	fs := http.FileServer(http.Dir("./static"))

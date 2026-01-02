@@ -50,6 +50,8 @@
     try {
       // Force overwrite to avoid any append/merge behavior differences across stacks.
       const options = Object.assign({ overwrite: true }, opts || {});
+
+      console.log("Writing message:", message, options);
       await ndef.write(message, options);
     } finally {
       isWriting = false;

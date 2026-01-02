@@ -34,6 +34,18 @@ func FindSpools() (*[]Spool, error) {
 	return rsp.JSON200, nil
 }
 
+func GetSpool(spoolID int) (*Spool, error) {
+	rsp, err := apiClient.GetSpoolSpoolSpoolIdGetWithResponse(context.Background(), spoolID)
+	if err != nil {
+		return nil, err
+	}
+	if rsp.StatusCode() != http.StatusOK {
+		log.Printf("Expected HTTP 200 but received %d", rsp.StatusCode())
+		return nil, fmt.Errorf("expected HTTP 200 but received %d", rsp.StatusCode())
+	}
+	return rsp.JSON200, nil
+}
+
 func GetFilamentName(f Filament) string {
 	if f.Name == nil {
 		return "Unknown Filament"
@@ -89,6 +101,90 @@ func GetFilamentColorHex(f Filament) string {
 		return colorHex[1:]
 	}
 	return colorHex
+}
+
+func GetFilamentMultiColorHexes(f Filament) string {
+	if f.MultiColorHexes == nil {
+		return ""
+	}
+	multiColorHexes, err := f.MultiColorHexes.AsFilamentMultiColorHexes0()
+	if err != nil {
+		log.Printf("Error getting multi color hexes: %+v", err)
+		return ""
+	}
+	return multiColorHexes
+}
+
+func GetFilamentWeight(f Filament) float32 {
+	if f.Weight == nil {
+		return 0
+	}
+	weight, err := f.Weight.AsFilamentWeight0()
+	if err != nil {
+		log.Printf("Error getting filament weight: %+v", err)
+		return 0
+	}
+	return weight
+}
+
+func GetFilamentSpoolWeight(f Filament) float32 {
+	if f.SpoolWeight == nil {
+		return 0
+	}
+	weight, err := f.SpoolWeight.AsFilamentSpoolWeight0()
+	if err != nil {
+		log.Printf("Error getting filament spool weight: %+v", err)
+		return 0
+	}
+	return weight
+}
+
+func GetFilamentSettingsExtruderTemp(f Filament) *int {
+	if f.SettingsExtruderTemp == nil {
+		return nil
+	}
+	t, err := f.SettingsExtruderTemp.AsFilamentSettingsExtruderTemp0()
+	if err != nil {
+		log.Printf("Error getting extruder temp: %+v", err)
+		return nil
+	}
+	return &t
+}
+
+func GetFilamentSettingsBedTemp(f Filament) *int {
+	if f.SettingsBedTemp == nil {
+		return nil
+	}
+	t, err := f.SettingsBedTemp.AsFilamentSettingsBedTemp0()
+	if err != nil {
+		log.Printf("Error getting bed temp: %+v", err)
+		return nil
+	}
+	return &t
+}
+
+func GetSpoolSpoolWeight(s Spool) float32 {
+	if s.SpoolWeight == nil {
+		return 0
+	}
+	weight, err := s.SpoolWeight.AsSpoolSpoolWeight0()
+	if err != nil {
+		log.Printf("Error getting spool tare weight: %+v", err)
+		return 0
+	}
+	return weight
+}
+
+func GetSpoolLotNr(s Spool) string {
+	if s.LotNr == nil {
+		return ""
+	}
+	lot, err := s.LotNr.AsSpoolLotNr0()
+	if err != nil {
+		log.Printf("Error getting lot nr: %+v", err)
+		return ""
+	}
+	return lot
 }
 
 func GetSpoolLocation(s Spool) string {

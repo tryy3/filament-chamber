@@ -12,11 +12,9 @@ templ adminContent() {
 				This page is intentionally simple. Use it to init/read/write Filament-Chamber spool + location tags.
 			</p>
 		</div>
-
 		<div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
 			<div class="bg-white dark:bg-gray-800 shadow rounded-lg p-4 transition-colors">
 				<h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-3">Spool Tag</h3>
-
 				<div class="space-y-3">
 					<label class="block text-sm text-gray-700 dark:text-gray-300">
 						Spool ID
@@ -48,39 +46,36 @@ templ adminContent() {
 					</label>
 					<div class="flex gap-2">
 						<button
+							id="fc-admin-write-spool-tag"
 							type="button"
 							class="bg-blue-500 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-800 text-white font-bold py-2 px-4 rounded"
-							onclick="window.fcNfc.writeSpoolTagInit(Number(document.getElementById('fc-spool-id').value), { payloadSize: Number(document.getElementById('fc-opt-payload-bytes').value) || undefined, auxSize: Number(document.getElementById('fc-opt-aux-bytes').value) || undefined })"
 						>
 							Init/Reset + Write spool tag
 						</button>
 					</div>
-					<div class="flex gap-2">
-					</div>
+					<div class="flex gap-2"></div>
 					<p class="text-xs text-gray-500 dark:text-gray-400">
 						If spool writes fail but location writes succeed, keep OPT payload small (e.g. 112) so the 2-record NDEF message stays under 255 bytes.
 					</p>
 				</div>
 			</div>
-
 			<div class="bg-white dark:bg-gray-800 shadow rounded-lg p-4 transition-colors">
 				<h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-3">Location Tag</h3>
-
 				<div class="space-y-3">
 					<label class="block text-sm text-gray-700 dark:text-gray-300">
 						Location
 						<input
 							id="fc-location"
 							type="text"
-							value="Shelf A / R2C3"
+							value="chamber1_A1"
 							class="mt-1 w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
 						/>
 					</label>
 					<div class="flex gap-2">
 						<button
+							id="fc-admin-write-location-tag"
 							type="button"
 							class="bg-blue-500 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-800 text-white font-bold py-2 px-4 rounded"
-							onclick="window.fcNfc.writeLocationTagInit(document.getElementById('fc-location').value)"
 						>
 							Init/Reset + Write location tag
 						</button>
@@ -88,28 +83,54 @@ templ adminContent() {
 				</div>
 			</div>
 		</div>
-
 		<div class="bg-white dark:bg-gray-800 shadow rounded-lg p-4 transition-colors">
 			<h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-3">Read</h3>
 			<div class="flex gap-2 mb-3">
 				<button
+					id="fc-admin-read-tag"
 					type="button"
 					class="bg-gray-500 hover:bg-gray-700 dark:bg-gray-600 dark:hover:bg-gray-800 text-white font-bold py-2 px-4 rounded"
-					onclick="window.fcNfc.readTagOnce()"
 				>
 					Read tag (prints details in console)
 				</button>
 				<button
+					id="fc-admin-clear-log"
 					type="button"
 					class="bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-900 dark:text-gray-100 font-semibold py-2 px-4 rounded"
-					onclick="document.getElementById('fc-nfc-log').textContent=''"
 				>
 					Clear log
 				</button>
+			</div>
+			<div class="mb-3 rounded border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 p-3">
+				<div class="text-sm font-semibold text-gray-800 dark:text-gray-200 mb-2">Last scan</div>
+				<div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
+					<div class="flex justify-between gap-3">
+						<span class="text-gray-500 dark:text-gray-400">Time</span>
+						<span id="fc-scan-time" class="font-medium text-gray-800 dark:text-gray-200">-</span>
+					</div>
+					<div class="flex justify-between gap-3">
+						<span class="text-gray-500 dark:text-gray-400">Serial</span>
+						<span id="fc-scan-serial" class="font-medium text-gray-800 dark:text-gray-200">-</span>
+					</div>
+					<div class="flex justify-between gap-3">
+						<span class="text-gray-500 dark:text-gray-400">Spool ID</span>
+						<span id="fc-scan-spool-id" class="font-medium text-gray-800 dark:text-gray-200">-</span>
+					</div>
+					<div class="flex justify-between gap-3">
+						<span class="text-gray-500 dark:text-gray-400">Location</span>
+						<span id="fc-scan-location" class="font-medium text-gray-800 dark:text-gray-200">-</span>
+					</div>
+					<div class="flex justify-between gap-3 md:col-span-2">
+						<span class="text-gray-500 dark:text-gray-400">Warnings</span>
+						<span id="fc-scan-warnings" class="font-medium text-gray-800 dark:text-gray-200 text-right">-</span>
+					</div>
+				</div>
+				<div class="mt-3">
+					<div class="text-xs font-semibold text-gray-600 dark:text-gray-300 mb-1">Parsed JSON</div>
+					<pre id="fc-scan-json" class="text-xs font-mono whitespace-pre-wrap text-gray-800 dark:text-gray-200 bg-white/60 dark:bg-black/20 border border-gray-200 dark:border-gray-700 rounded p-2 max-h-64 overflow-auto"></pre>
+				</div>
 			</div>
 			<div id="fc-nfc-log" class="text-sm font-mono whitespace-pre-wrap bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded p-3 max-h-80 overflow-auto"></div>
 		</div>
 	</div>
 }
-
-

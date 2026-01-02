@@ -28,13 +28,45 @@
       // Important: if payloadSize is omitted, OptPayload.init() will use a compact
       // representation (no padding). That is much more reliable to write on some
       // Android/Web NFC stacks.
-      const payloadSize = params ? params.payloadSize : undefined;
+      let payloadSize = params ? params.payloadSize : undefined;
       const auxSize =
         params && typeof params.auxSize === "number"
           ? params.auxSize
           : window.fcNfcConst.DEFAULTS.AUX_REGION_BYTES;
 
+      // If we intend to populate OPT keys (optMain/optAux), the compact layout
+      // is too small because it allocates only enough space for empty CBOR maps.
+      // Switch to a preallocated layout with a large (<=512B) main region.
+      if (
+        payloadSize === undefined &&
+        params &&
+        (params.optMain || params.optAux)
+      ) {
+        payloadSize = 100 + auxSize;
+      }
+
+      console.log("payloadSize", payloadSize);
+
       const opt = window.fcOpt.OptPayload.init({ payloadSize, auxSize });
+
+      // Optionally populate OPT fields from caller-provided maps/objects.
+      const applyKeyValues = (target, kv) => {
+        if (!kv) return;
+        if (kv instanceof Map) {
+          for (const [k, v] of kv.entries()) target(Number(k), v);
+          return;
+        }
+        if (typeof kv === "object" && !Array.isArray(kv)) {
+          for (const k of Object.keys(kv)) target(Number(k), kv[k]);
+          return;
+        }
+        throw new Error("Expected optMain/optAux to be Map or object");
+      };
+
+      applyKeyValues((k, v) => opt.setMainKey(k, v), params && params.optMain);
+      if (opt.getAuxMap()) {
+        applyKeyValues((k, v) => opt.setAuxKey(k, v), params && params.optAux);
+      }
       const spoolJson = window.fcRecords.encodeSpoolmanLinkPayload(spool_id);
 
       return {

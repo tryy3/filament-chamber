@@ -1,10 +1,12 @@
 package handlers
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 
@@ -36,7 +38,125 @@ func SpoolHandler(w http.ResponseWriter, r *http.Request) {
 	component := templates.Spool(materials, brands)
 	err := component.Render(r.Context(), w)
 	if err != nil {
+		log.Printf("Error rendering template: %+v", err)
 		http.Error(w, "Error rendering template", http.StatusInternalServerError)
+		return
+	}
+}
+
+// SpoolDetailHandler serves the spool detail page (/spool/{id})
+func SpoolDetailHandler(w http.ResponseWriter, r *http.Request) {
+	// Expect: /spool/{id}
+	idStr := strings.TrimPrefix(r.URL.Path, "/spool/")
+	if idStr == "" || strings.Contains(idStr, "/") {
+		http.NotFound(w, r)
+		return
+	}
+
+	id, err := strconv.Atoi(idStr)
+	if err != nil || id <= 0 {
+		http.NotFound(w, r)
+		return
+	}
+
+	found, err := spoolman.GetSpool(id)
+	if err != nil {
+		log.Printf("Error getting spool: %+v", err)
+		http.Error(w, "Error getting spool", http.StatusInternalServerError)
+		return
+	}
+
+	if found == nil {
+		http.NotFound(w, r)
+		return
+	}
+
+	component := templates.SpoolDetail(found)
+	if err := component.Render(r.Context(), w); err != nil {
+		log.Printf("Error rendering template: %+v", err)
+		http.Error(w, "Error rendering template", http.StatusInternalServerError)
+		return
+	}
+}
+
+type spoolForOptResponse struct {
+	Id              int     `json:"id"`
+	Archived        bool    `json:"archived"`
+	Location        string  `json:"location"`
+	LotNr           string  `json:"lot_nr"`
+	InitialWeight   float32 `json:"initial_weight"`
+	RemainingWeight float32 `json:"remaining_weight"`
+	UsedWeight      float32 `json:"used_weight"`
+	SpoolWeight     float32 `json:"spool_weight"`
+
+	Filament struct {
+		Id                   int     `json:"id"`
+		Name                 string  `json:"name"`
+		VendorName           string  `json:"vendor_name"`
+		Material             string  `json:"material"`
+		ColorHex             string  `json:"color_hex"`
+		MultiColorHexes      string  `json:"multi_color_hexes"`
+		Density              float32 `json:"density"`
+		Diameter             float32 `json:"diameter"`
+		Weight               float32 `json:"weight"`
+		SpoolWeight          float32 `json:"spool_weight"`
+		SettingsExtruderTemp *int    `json:"settings_extruder_temp,omitempty"`
+		SettingsBedTemp      *int    `json:"settings_bed_temp,omitempty"`
+	} `json:"filament"`
+}
+
+// SpoolJSONHandler returns a frontend-friendly view of a spool (for OPT mapping).
+func SpoolJSONHandler(w http.ResponseWriter, r *http.Request) {
+	// Expect: /api/spool/{id}
+	idStr := strings.TrimPrefix(r.URL.Path, "/api/spool/")
+	if idStr == "" || strings.Contains(idStr, "/") {
+		http.NotFound(w, r)
+		return
+	}
+	id, err := strconv.Atoi(idStr)
+	if err != nil || id <= 0 {
+		http.NotFound(w, r)
+		return
+	}
+
+	spool, err := spoolman.GetSpool(id)
+	if err != nil {
+		log.Printf("Error getting spool: %+v", err)
+		http.Error(w, "Error getting spool", http.StatusInternalServerError)
+		return
+	}
+	if spool == nil {
+		http.NotFound(w, r)
+		return
+	}
+
+	out := spoolForOptResponse{
+		Id:              spool.Id,
+		Archived:        spool.Archived,
+		Location:        spoolman.GetSpoolLocation(*spool),
+		LotNr:           spoolman.GetSpoolLotNr(*spool),
+		InitialWeight:   spoolman.GetSpoolInitialWeight(*spool),
+		RemainingWeight: spoolman.GetSpoolRemainingWeight(*spool),
+		UsedWeight:      spool.UsedWeight,
+		SpoolWeight:     spoolman.GetSpoolSpoolWeight(*spool),
+	}
+
+	out.Filament.Id = spool.Filament.Id
+	out.Filament.Name = spoolman.GetFilamentName(spool.Filament)
+	out.Filament.VendorName = spoolman.GetFilamentBrand(spool.Filament)
+	out.Filament.Material = spoolman.GetFilamentMaterial(spool.Filament)
+	out.Filament.ColorHex = spoolman.GetFilamentColorHex(spool.Filament)
+	out.Filament.MultiColorHexes = spoolman.GetFilamentMultiColorHexes(spool.Filament)
+	out.Filament.Density = spool.Filament.Density
+	out.Filament.Diameter = spool.Filament.Diameter
+	out.Filament.Weight = spoolman.GetFilamentWeight(spool.Filament)
+	out.Filament.SpoolWeight = spoolman.GetFilamentSpoolWeight(spool.Filament)
+	out.Filament.SettingsExtruderTemp = spoolman.GetFilamentSettingsExtruderTemp(spool.Filament)
+	out.Filament.SettingsBedTemp = spoolman.GetFilamentSettingsBedTemp(spool.Filament)
+
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(out); err != nil {
+		http.Error(w, "Error encoding spool", http.StatusInternalServerError)
 		return
 	}
 }
@@ -224,6 +344,7 @@ func SpoolsAPIHandler(w http.ResponseWriter, r *http.Request) {
 	component := templates.SpoolsResult(filteredSpools, spoolsByLocation, filteredIDs)
 	err = component.Render(r.Context(), w)
 	if err != nil {
+		log.Printf("Error rendering template: %+v", err)
 		http.Error(w, "Error rendering template", http.StatusInternalServerError)
 		return
 	}

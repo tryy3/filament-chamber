@@ -8,77 +8,84 @@ templ Spool(materials []string, brands []string) {
 }
 
 templ spoolContent(materials []string, brands []string) {
-	<div class="">
-		<div class="bg-white dark:bg-gray-800 shadow p-4 transition-colors duration-200">
-			<h2 class="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">Filament Spools</h2>
-			<p class="text-gray-600 dark:text-gray-400 mb-6">
-				Manage your filament spools and inventory here.
-			</p>
-			<!-- Filter Form -->
-			<div class="mb-6 bg-gray-50 dark:bg-gray-700 rounded-lg p-4 border border-gray-200 dark:border-gray-600 transition-colors duration-200">
-				<h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-3">Filters</h3>
-				<form
-					id="filter-form"
-					class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4"
-					hx-get="/api/spools"
-					hx-target="#spools-result"
-					hx-swap="innerHTML"
-					hx-trigger="submit, change from:select, keyup changed delay:500ms from:input[type='text']"
+	<div class="bg-white dark:bg-gray-800 shadow p-2 transition-colors duration-200">
+		<h2 class="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">Filament Spools</h2>
+		<p class="text-gray-600 dark:text-gray-400 mb-6">
+			Manage your filament spools and inventory here.
+		</p>
+		<!-- Filter Form -->
+		<div class="mb-6 bg-gray-50 dark:bg-gray-700 rounded-lg p-1 border border-gray-200 dark:border-gray-600 transition-colors duration-200">
+			<div class="flex items-center justify-between gap-2 mb-3">
+				<h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200">Filters</h3>
+				<button
+					id="fc-scan-spool-tag"
+					type="button"
+					class="bg-blue-500 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-800 text-white font-bold py-2 px-3 rounded transition-colors text-sm"
 				>
-					<div
-						id="filter-options"
-						class="contents"
-					>
-						@FilterOptions(materials, brands)
-					</div>
-					<div>
-						<input
-							type="text"
-							id="filter-color"
-							name="color"
-							placeholder="Color (hex)"
-							class="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 transition-colors"
-						/>
-					</div>
-					<div>
-						<input
-							type="text"
-							id="filter-spool-id"
-							name="spool_id"
-							placeholder="Spool ID"
-							class="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 transition-colors"
-						/>
-					</div>
-				</form>
-				<div class="mt-4 flex gap-2">
-					<button
-						type="submit"
-						form="filter-form"
-						class="bg-blue-500 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-800 text-white font-bold py-2 px-4 rounded transition-colors"
-					>
-						Apply Filters
-					</button>
-					<button
-						type="button"
-						class="bg-gray-500 hover:bg-gray-700 dark:bg-gray-600 dark:hover:bg-gray-800 text-white font-bold py-2 px-4 rounded transition-colors"
-						hx-get="/api/spools"
-						hx-target="#spools-result"
-						hx-swap="innerHTML"
-						onclick="document.getElementById('filter-form').reset();"
-					>
-						Clear Filters
-					</button>
-				</div>
+					Scan spool tag
+				</button>
 			</div>
-			<div
-				id="spools-result"
+			<form
+				id="filter-form"
+				class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4"
 				hx-get="/api/spools"
 				hx-target="#spools-result"
 				hx-swap="innerHTML"
-				hx-trigger="load"
+				hx-trigger="submit, change from:select, keyup changed delay:500ms from:input[type='text']"
 			>
-				<p class="text-gray-500 dark:text-gray-400">Loading spools...</p>
+				<div
+					id="filter-options"
+					class="contents"
+				>
+					@FilterOptions(materials, brands)
+				</div>
+				<div>
+					<input
+						type="text"
+						id="filter-color"
+						name="color"
+						placeholder="Color (hex)"
+						class="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 transition-colors"
+					/>
+				</div>
+				<div>
+					<input
+						type="text"
+						id="filter-spool-id"
+						name="spool_id"
+						placeholder="Spool ID"
+						class="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 transition-colors"
+					/>
+				</div>
+			</form>
+			<div class="mt-4 flex gap-2">
+				<button
+					type="submit"
+					form="filter-form"
+					class="bg-blue-500 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-800 text-white font-bold py-2 px-4 rounded transition-colors"
+				>
+					Apply Filters
+				</button>
+				<button
+					type="button"
+					class="bg-gray-500 hover:bg-gray-700 dark:bg-gray-600 dark:hover:bg-gray-800 text-white font-bold py-2 px-4 rounded transition-colors"
+					hx-get="/api/spools"
+					hx-target="#spools-result"
+					hx-swap="innerHTML"
+					onclick="document.getElementById('filter-form').reset();"
+				>
+					Clear Filters
+				</button>
 			</div>
+		</div>
+		<div
+			id="spools-result"
+			hx-get="/api/spools"
+			hx-target="#spools-result"
+			hx-swap="innerHTML"
+			hx-trigger="load"
+		>
+			<p class="text-gray-500 dark:text-gray-400">Loading spools...</p>
 		</div>
 	</div>
 }
@@ -87,10 +94,10 @@ templ SpoolsResult(spools *[]spoolman.Spool, spoolsByLocation map[string]*spoolm
 	{{ rows := []string{"A", "B", "C", "D", "E", "F"} }}
 	{{ columns := []string{"1", "2", "3", "4", "5", "6", "7", "8", "9", "10"} }}
 	<div class="grid grid-cols-1 md:grid-cols-[repeat(24,_minmax(0,_1fr))] gap-4">
-		<div class="col-[span_16_/_span_16]">
+		<div class="order-2 md:order-1 md:col-[span_16_/_span_16]">
 			@SpoolList(spools)
 		</div>
-		<div class="col-span-8">
+		<div class="order-1 md:order-2 md:col-span-8">
 			@SpoolLocationGrid(spoolsByLocation, filteredSpoolIDs, rows, columns)
 		</div>
 	</div>
@@ -105,51 +112,53 @@ templ SpoolList(spools *[]spoolman.Spool) {
 }
 
 templ SpoolCard(spool *spoolman.Spool) {
-	<div class="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:shadow-md transition-shadow bg-white dark:bg-gray-800">
-		<div class="flex items-center justify-between mb-3">
-			<div class="flex items-center gap-2">
-				<div
-					class="w-10 h-10 rounded-full border border-gray-300 dark:border-gray-600 flex-shrink-0"
-					style={ fmt.Sprintf("background-color: #%s", spoolman.GetFilamentColorHex(spool.Filament)) }
-					title={ fmt.Sprintf("Color: #%s", spoolman.GetFilamentColorHex(spool.Filament)) }
-				></div>
-				<h3 class="font-semibold text-gray-800 dark:text-gray-200">
-					{ spoolman.GetFilamentBrand(spool.Filament) }
-					<br/>
-					{ spoolman.GetFilamentName(spool.Filament) }
-				</h3>
-			</div>
-			<span class="px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-300 text-xs font-semibold rounded">#{ fmt.Sprintf("%d", spool.Id) }</span>
-		</div>
-		<div class="space-y-2 text-sm text-gray-600 dark:text-gray-400">
-			<div class="flex justify-between">
-				<span>Material:</span>
-				<span class="font-medium">{ spoolman.GetFilamentMaterial(spool.Filament) }</span>
-			</div>
-			<div class="flex justify-between">
-				<span>Weight:</span>
-				<span class="font-medium">{ fmt.Sprintf("%.0fg / %.0fg", spoolman.GetSpoolRemainingWeight(*spool), spoolman.GetSpoolInitialWeight(*spool)) }</span>
-			</div>
-			<div class="flex justify-between">
-				<span>Location:</span>
-				<span class="font-medium">{ spoolman.GetSpoolLocation(*spool) }</span>
-			</div>
-			<div class="flex justify-between">
-				<span>Last Used:</span>
-				<span class="font-medium">{ spoolman.GetSpoolLastUsed(*spool) }</span>
-			</div>
-		</div>
-		if spoolman.GetSpoolInitialWeight(*spool) > 0 {
-			<div class="mt-4">
-				<div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+	<a href={ fmt.Sprintf("/spool/%d", spool.Id) } class="block">
+		<div class="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:shadow-md transition-shadow bg-white dark:bg-gray-800 cursor-pointer">
+			<div class="flex items-center justify-between mb-3">
+				<div class="flex items-center gap-2">
 					<div
-						class="bg-blue-600 dark:bg-blue-500 h-2 rounded-full"
-						style={ fmt.Sprintf("width: %.0f%%", (spoolman.GetSpoolRemainingWeight(*spool)/spoolman.GetSpoolInitialWeight(*spool))*100) }
+						class="w-10 h-10 rounded-full border border-gray-300 dark:border-gray-600 flex-shrink-0"
+						style={ fmt.Sprintf("background-color: #%s", spoolman.GetFilamentColorHex(spool.Filament)) }
+						title={ fmt.Sprintf("Color: #%s", spoolman.GetFilamentColorHex(spool.Filament)) }
 					></div>
+					<h3 class="font-semibold text-gray-800 dark:text-gray-200">
+						{ spoolman.GetFilamentBrand(spool.Filament) }
+						<br/>
+						{ spoolman.GetFilamentName(spool.Filament) }
+					</h3>
+				</div>
+				<span class="px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-300 text-xs font-semibold rounded">#{ fmt.Sprintf("%d", spool.Id) }</span>
+			</div>
+			<div class="space-y-2 text-sm text-gray-600 dark:text-gray-400">
+				<div class="flex justify-between">
+					<span>Material:</span>
+					<span class="font-medium">{ spoolman.GetFilamentMaterial(spool.Filament) }</span>
+				</div>
+				<div class="flex justify-between">
+					<span>Weight:</span>
+					<span class="font-medium">{ fmt.Sprintf("%.0fg / %.0fg", spoolman.GetSpoolRemainingWeight(*spool), spoolman.GetSpoolInitialWeight(*spool)) }</span>
+				</div>
+				<div class="flex justify-between">
+					<span>Location:</span>
+					<span class="font-medium">{ spoolman.GetSpoolLocation(*spool) }</span>
+				</div>
+				<div class="flex justify-between">
+					<span>Last Used:</span>
+					<span class="font-medium">{ spoolman.GetSpoolLastUsed(*spool) }</span>
 				</div>
 			</div>
-		}
-	</div>
+			if spoolman.GetSpoolInitialWeight(*spool) > 0 {
+				<div class="mt-4">
+					<div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+						<div
+							class="bg-blue-600 dark:bg-blue-500 h-2 rounded-full"
+							style={ fmt.Sprintf("width: %.0f%%", (spoolman.GetSpoolRemainingWeight(*spool)/spoolman.GetSpoolInitialWeight(*spool))*100) }
+						></div>
+					</div>
+				</div>
+			}
+		</div>
+	</a>
 }
 
 templ SpoolLocationGrid(spoolsByLocation map[string]*spoolman.Spool, filteredSpoolIDs map[int]bool, rows []string, columns []string) {
@@ -187,22 +196,43 @@ templ LocationCell(location string, colorHex string, id string, material string,
 		// Normal/Active - elevated look with blue tint
 		{{ cellClass = "bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900 dark:to-blue-800 rounded-lg p-1 shadow-sm ring-1 ring-blue-200 dark:ring-blue-700" }}
 	}
-	<div class={ cellClass }>
-		<div class={ "flex items-center justify-between pb-2", contentClass }>
-			<div
-				class="w-5 h-5 rounded-full border border-gray-300 dark:border-gray-600 flex-shrink-0"
-				style={ fmt.Sprintf("background-color: #%s", colorHex) }
-				title={ fmt.Sprintf("Color: #%s", colorHex) }
-			></div>
-			<span class="w-6 h-5 border border-gray-300 dark:border-gray-600 text-center flex items-center justify-center p-0 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-300 text-tiny font-semibold rounded">
-				#{ id }
-			</span>
+	if exists {
+		<a href={ "/spool/" + id } class="block">
+			<div class={ cellClass + " cursor-pointer hover:shadow-md transition-shadow" }>
+				<div class={ "flex flex-col gap-1 md:flex-row items-center justify-between pb-2", contentClass }>
+					<div
+						class="order-2 md:order-1 w-5 h-5 rounded-full border border-gray-300 dark:border-gray-600 flex-shrink-0"
+						style={ fmt.Sprintf("background-color: #%s", colorHex) }
+						title={ fmt.Sprintf("Color: #%s", colorHex) }
+					></div>
+					<span class="order-1 md:order-2 w-6 h-5 border border-gray-300 dark:border-gray-600 text-center flex items-center justify-center p-0 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-300 text-tiny font-semibold rounded">
+						#{ id }
+					</span>
+				</div>
+				<div class={ "grid grid-cols-1 gap-1", contentClass }>
+					<span class="text-xs text-gray-500 dark:text-gray-400">{ material }</span>
+					<span class="text-xs text-gray-700 dark:text-gray-300">{ location }</span>
+				</div>
+			</div>
+		</a>
+	} else {
+		<div class={ cellClass }>
+			<div class={ "flex flex-col gap-1 md:flex-row items-center justify-between pb-2", contentClass }>
+				<div
+					class="order-2 md:order-1 w-5 h-5 rounded-full border border-gray-300 dark:border-gray-600 flex-shrink-0"
+					style={ fmt.Sprintf("background-color: #%s", colorHex) }
+					title={ fmt.Sprintf("Color: #%s", colorHex) }
+				></div>
+				<span class="order-1 md:order-2 w-6 h-5 border border-gray-300 dark:border-gray-600 text-center flex items-center justify-center p-0 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-300 text-tiny font-semibold rounded">
+					#{ id }
+				</span>
+			</div>
+			<div class={ "grid grid-cols-1 gap-1", contentClass }>
+				<span class="text-xs text-gray-500 dark:text-gray-400">{ material }</span>
+				<span class="text-xs text-gray-700 dark:text-gray-300">{ location }</span>
+			</div>
 		</div>
-		<div class={ "grid grid-cols-1 gap-1", contentClass }>
-			<span class="text-xs text-gray-500 dark:text-gray-400">{ material }</span>
-			<span class="text-xs text-gray-700 dark:text-gray-300">{ location }</span>
-		</div>
-	</div>
+	}
 }
 
 templ FilterOptions(materials []string, brands []string) {

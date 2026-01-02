@@ -38,6 +38,7 @@ func main() {
 	mux.HandleFunc("/api/spools", handlers.SpoolsAPIHandler)
 	mux.HandleFunc("/api/spools/filters", handlers.FilterMetadataHandler)
 	mux.HandleFunc("/api/spool/", handlers.SpoolJSONHandler)
+	mux.HandleFunc("/api/transfer-location", handlers.TransferLocationHandler)
 
 	// Static files (CSS, JS)
 	fs := http.FileServer(http.Dir("./static"))

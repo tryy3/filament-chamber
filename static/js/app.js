@@ -252,6 +252,7 @@ document.addEventListener("DOMContentLoaded", function () {
           spool_id: parsedSpool.spool_id,
           warnings: parsedSpool.warnings,
           opt: parsedSpool.opt ? parsedSpool.opt.toObject() : null,
+          optPayload: parsedSpool.opt, // Keep the OptPayload instance
         },
         location: {
           location: parsedLoc.location,
@@ -815,6 +816,81 @@ document.addEventListener("DOMContentLoaded", function () {
       const scanBtn = byId("fc-scan-spool-tag");
       if (!scanBtn) return;
 
+      // State for the workflow
+      let scannedSpoolData = null;
+
+      // Modal management
+      function showActionModal() {
+        const modal = byId("fc-action-modal");
+        if (modal) {
+          modal.classList.remove("hidden");
+          modal.setAttribute("aria-hidden", "false");
+        }
+      }
+
+      function hideActionModal() {
+        const modal = byId("fc-action-modal");
+        if (modal) {
+          modal.classList.add("hidden");
+          modal.setAttribute("aria-hidden", "true");
+        }
+      }
+
+      function showLocationModal() {
+        const modal = byId("fc-location-modal");
+        if (modal) {
+          modal.classList.remove("hidden");
+          modal.setAttribute("aria-hidden", "false");
+          showLocationStep("input");
+        }
+      }
+
+      function hideLocationModal() {
+        const modal = byId("fc-location-modal");
+        if (modal) {
+          modal.classList.add("hidden");
+          modal.setAttribute("aria-hidden", "true");
+        }
+      }
+
+      function showLocationStep(step) {
+        const inputStep = byId("fc-location-step-input");
+        const processingStep = byId("fc-location-step-processing");
+
+        if (inputStep) inputStep.classList.add("hidden");
+        if (processingStep) processingStep.classList.add("hidden");
+
+        if (step === "input" && inputStep) {
+          inputStep.classList.remove("hidden");
+        } else if (step === "processing" && processingStep) {
+          processingStep.classList.remove("hidden");
+        }
+      }
+
+      function populateActionModal(spoolData) {
+        const spoolId = spoolData.spool_id || "-";
+        const spoolName = spoolData.name || "Unknown Spool";
+        const spoolMaterial = spoolData.material || "-";
+        const spoolColor = spoolData.color || "#cccccc";
+
+        const idEl = byId("fc-action-spool-id");
+        const nameEl = byId("fc-action-spool-name");
+        const materialEl = byId("fc-action-spool-material");
+        const colorEl = byId("fc-action-spool-color");
+
+        if (idEl) idEl.textContent = "ID: " + spoolId;
+        if (nameEl) nameEl.textContent = spoolName;
+        if (materialEl) materialEl.textContent = spoolMaterial;
+        if (colorEl) colorEl.style.backgroundColor = spoolColor;
+      }
+
+      function populateLocationModal(spoolData) {
+        const spoolName = spoolData.name || "Unknown Spool";
+        const spoolNameEl = byId("fc-location-spool-name");
+        if (spoolNameEl) spoolNameEl.textContent = spoolName;
+      }
+
+      // Main scan button handler
       scanBtn.addEventListener("click", async function () {
         if (!nfcSupported()) {
           toast({
@@ -835,15 +911,52 @@ document.addEventListener("DOMContentLoaded", function () {
           const spoolId =
             out && out.spool ? Number(out.spool.spool_id) : Number.NaN;
 
-          if (Number.isFinite(spoolId) && spoolId > 0) {
-            window.location.href = "/spool/" + String(spoolId);
+          if (!Number.isFinite(spoolId) || spoolId <= 0) {
+            toast({
+              type: "error",
+              message: "This tag is not a spool tag (no spool_id found).",
+            });
             return;
           }
 
-          toast({
-            type: "error",
-            message: "This tag is not a spool tag (no spool_id found).",
-          });
+          // Store the scanned data for later use
+          scannedSpoolData = {
+            spool_id: spoolId,
+            name: "Spool #" + spoolId,
+            material: "-",
+            color: "#cccccc",
+            opt: out.spool.opt,
+            optPayload: out.spool.optPayload, // Store the OptPayload instance
+            rawData: out,
+          };
+
+          // Try to fetch spool details for better display
+          try {
+            const rsp = await fetch(
+              "/api/spool/" + encodeURIComponent(spoolId),
+              {
+                headers: { Accept: "application/json" },
+              }
+            );
+            if (rsp.ok) {
+              const spool = await rsp.json();
+              scannedSpoolData.name =
+                (spool?.filament?.vendor_name || "") +
+                " " +
+                (spool?.filament?.name || "");
+              scannedSpoolData.material = spool?.filament?.material || "-";
+              scannedSpoolData.color =
+                "#" + (spool?.filament?.color_hex || "cccccc");
+              scannedSpoolData.spoolData = spool;
+            }
+          } catch (e) {
+            // Ignore fetch errors, just use basic info
+            console.warn("Could not fetch spool details:", e);
+          }
+
+          // Show action selection modal
+          populateActionModal(scannedSpoolData);
+          showActionModal();
         } catch (e) {
           hideModal();
           const msg = e && e.message ? String(e.message) : String(e);
@@ -852,6 +965,222 @@ document.addEventListener("DOMContentLoaded", function () {
           setButtonDisabled(scanBtn, false);
         }
       });
+
+      // Action modal: View Details button
+      const viewDetailsBtn = byId("fc-action-view-details");
+      if (viewDetailsBtn) {
+        viewDetailsBtn.addEventListener("click", function () {
+          if (scannedSpoolData && scannedSpoolData.spool_id) {
+            window.location.href =
+              "/spool/" + String(scannedSpoolData.spool_id);
+          }
+        });
+      }
+
+      // Action modal: Transfer Location button
+      const transferLocationBtn = byId("fc-action-transfer-location");
+      if (transferLocationBtn) {
+        transferLocationBtn.addEventListener("click", function () {
+          hideActionModal();
+          if (scannedSpoolData) {
+            populateLocationModal(scannedSpoolData);
+            showLocationModal();
+          }
+        });
+      }
+
+      // Action modal: Cancel button
+      const actionCancelBtn = byId("fc-action-cancel");
+      if (actionCancelBtn) {
+        actionCancelBtn.addEventListener("click", function () {
+          hideActionModal();
+          scannedSpoolData = null;
+        });
+      }
+
+      // Action modal backdrop click
+      const actionBackdrop = byId("fc-action-modal-backdrop");
+      if (actionBackdrop) {
+        actionBackdrop.addEventListener("click", function () {
+          hideActionModal();
+          scannedSpoolData = null;
+        });
+      }
+
+      // Location modal: Scan Location Tag button
+      const scanLocationBtn = byId("fc-location-scan-btn");
+      if (scanLocationBtn) {
+        scanLocationBtn.addEventListener("click", async function () {
+          setButtonDisabled(scanLocationBtn, true);
+          hideLocationModal();
+          showModal("Approach location tag to scan…");
+
+          try {
+            const out = await window.fcNfc.readTagOnce();
+            hideModal();
+
+            const location = out && out.location ? out.location.location : null;
+
+            if (!location) {
+              toast({
+                type: "error",
+                message: "This tag is not a location tag.",
+              });
+              showLocationModal();
+              return;
+            }
+
+            // Populate the location input with scanned value
+            const locationInput = byId("fc-location-input");
+            if (locationInput) {
+              locationInput.value = location;
+            }
+
+            toast({
+              type: "success",
+              message: "Location tag scanned: " + location,
+            });
+            showLocationModal();
+          } catch (e) {
+            hideModal();
+            const msg = e && e.message ? String(e.message) : String(e);
+            toast({
+              type: "error",
+              message: "Error scanning location: " + msg,
+            });
+            showLocationModal();
+          } finally {
+            setButtonDisabled(scanLocationBtn, false);
+          }
+        });
+      }
+
+      // Location modal: Next button (send immediately)
+      const locationNextBtn = byId("fc-location-next-btn");
+      if (locationNextBtn) {
+        locationNextBtn.addEventListener("click", async function () {
+          const locationInput = byId("fc-location-input");
+          const locationId = locationInput ? locationInput.value.trim() : "";
+
+          if (!locationId) {
+            toast({
+              type: "error",
+              message: "Please enter or scan a location ID.",
+            });
+            return;
+          }
+
+          if (!scannedSpoolData) {
+            toast({
+              type: "error",
+              message: "Missing spool data.",
+            });
+            return;
+          }
+
+          // Show processing step
+          showLocationStep("processing");
+          setButtonDisabled(locationNextBtn, true);
+
+          try {
+            // Build payload with hybrid OPT data
+            const timestamp = new Date().toISOString();
+            const payload = {
+              records: [
+                {
+                  value: {
+                    spoolId: String(scannedSpoolData.spool_id),
+                    locationId: locationId,
+                    timestamp: timestamp,
+                    tagData: {},
+                  },
+                },
+              ],
+            };
+
+            // Translate OPT data if available
+
+            if (scannedSpoolData.optPayload && window.fcOptTranslator) {
+              try {
+                const translated = window.fcOptTranslator.translateOptPayload(
+                  scannedSpoolData.optPayload
+                );
+                if (translated) {
+                  payload.records[0].value.tagData = translated;
+                }
+              } catch (e) {
+                console.warn("Could not translate OPT data:", e);
+                // Continue with empty tagData
+              }
+            }
+
+            // Send to backend API endpoint (proxies to Kafka)
+            const response = await fetch("/api/transfer-location", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify(payload),
+            });
+
+            if (!response.ok) {
+              const errorText = await response.text();
+              throw new Error(
+                "Transfer request failed: " + (errorText || response.status)
+              );
+            }
+
+            // Success!
+            hideLocationModal();
+            toast({
+              type: "success",
+              message: "Location transfer initiated successfully!",
+            });
+
+            // Reset state
+            scannedSpoolData = null;
+            if (locationInput) locationInput.value = "";
+
+            // Optional: refresh the spool list to show updated location
+            // Trigger htmx refresh if the spools-result element exists
+            const spoolsResult = document.getElementById("spools-result");
+            if (spoolsResult && window.htmx) {
+              window.htmx.trigger(spoolsResult, "load");
+            }
+          } catch (e) {
+            const msg = e && e.message ? String(e.message) : String(e);
+            toast({
+              type: "error",
+              message: "Failed to initiate transfer: " + msg,
+            });
+            showLocationStep("input");
+          } finally {
+            setButtonDisabled(locationNextBtn, false);
+          }
+        });
+      }
+
+      // Location modal: Cancel button
+      const locationCancelBtn = byId("fc-location-cancel-btn");
+      if (locationCancelBtn) {
+        locationCancelBtn.addEventListener("click", function () {
+          hideLocationModal();
+          scannedSpoolData = null;
+          const locationInput = byId("fc-location-input");
+          if (locationInput) locationInput.value = "";
+        });
+      }
+
+      // Location modal backdrop click
+      const locationBackdrop = byId("fc-location-modal-backdrop");
+      if (locationBackdrop) {
+        locationBackdrop.addEventListener("click", function () {
+          hideLocationModal();
+          scannedSpoolData = null;
+          const locationInput = byId("fc-location-input");
+          if (locationInput) locationInput.value = "";
+        });
+      }
     }
 
     bindSpoolDetailWrite();

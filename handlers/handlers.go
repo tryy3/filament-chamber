@@ -1,8 +1,10 @@
 package handlers
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"regexp"
@@ -378,5 +380,73 @@ func FilterMetadataHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		http.Error(w, "Error rendering template", http.StatusInternalServerError)
 		return
+	}
+}
+
+// TransferLocationHandler proxies location transfer requests to Kafka HTTP bridge
+func TransferLocationHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	// Read the request body
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		log.Printf("Error reading request body: %v", err)
+		http.Error(w, "Error reading request body", http.StatusBadRequest)
+		return
+	}
+	defer r.Body.Close()
+
+	// Validate that it's valid JSON
+	var payload map[string]interface{}
+	if err := json.Unmarshal(body, &payload); err != nil {
+		log.Printf("Error parsing JSON: %v", err)
+		http.Error(w, "Invalid JSON payload", http.StatusBadRequest)
+		return
+	}
+
+	// Log the transfer request
+	log.Printf("Location transfer request: %s", string(body))
+
+	// Forward to Kafka HTTP bridge
+	kafkaURL := "https://kafka.tryy3.dev/topics/3dprinter-filament-transfer-initiated"
+	req, err := http.NewRequest("POST", kafkaURL, bytes.NewBuffer(body))
+	if err != nil {
+		log.Printf("Error creating Kafka request: %v", err)
+		http.Error(w, "Error creating request", http.StatusInternalServerError)
+		return
+	}
+
+	req.Header.Set("Content-Type", "application/vnd.kafka.json.v2+json")
+
+	// Execute the request
+	client := &http.Client{Timeout: 10 * time.Second}
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Printf("Error sending to Kafka: %v", err)
+		http.Error(w, "Error forwarding to Kafka: "+err.Error(), http.StatusBadGateway)
+		return
+	}
+	defer resp.Body.Close()
+
+	// Read Kafka response
+	kafkaBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		log.Printf("Error reading Kafka response: %v", err)
+		http.Error(w, "Error reading Kafka response", http.StatusInternalServerError)
+		return
+	}
+
+	// Forward Kafka response status and body
+	w.Header().Set("Content-Type", resp.Header.Get("Content-Type"))
+	w.WriteHeader(resp.StatusCode)
+	w.Write(kafkaBody)
+
+	if resp.StatusCode >= 200 && resp.StatusCode < 300 {
+		log.Printf("Location transfer successful")
+	} else {
+		log.Printf("Location transfer failed with status %d: %s", resp.StatusCode, string(kafkaBody))
 	}
 }

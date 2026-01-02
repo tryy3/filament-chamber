@@ -193,9 +193,132 @@ templ baseWithActiveLink(title string, content templ.Component, activePage strin
 					</div>
 				</div>
 			</div>
+			<!-- Action Selection Modal (after spool scan) -->
+			<div
+				id="fc-action-modal"
+				class="fixed inset-0 z-[60] hidden"
+				role="dialog"
+				aria-modal="true"
+				aria-hidden="true"
+			>
+				<div class="absolute inset-0 bg-black/50" id="fc-action-modal-backdrop"></div>
+				<div class="relative h-full w-full flex items-center justify-center p-4">
+					<div class="w-full max-w-md rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-lg p-6">
+						<h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Spool Tag Scanned</h3>
+						<div id="fc-action-spool-info" class="mb-6 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+							<div class="flex items-center gap-3">
+								<div id="fc-action-spool-color" class="w-12 h-12 rounded-full border-2 border-gray-300 dark:border-gray-600 flex-shrink-0"></div>
+								<div class="flex-1">
+									<div class="text-sm font-semibold text-gray-900 dark:text-gray-100" id="fc-action-spool-id">ID: -</div>
+									<div class="text-sm text-gray-700 dark:text-gray-300" id="fc-action-spool-name">-</div>
+									<div class="text-xs text-gray-500 dark:text-gray-400" id="fc-action-spool-material">-</div>
+								</div>
+							</div>
+						</div>
+						<div class="space-y-3">
+							<button
+								id="fc-action-view-details"
+								type="button"
+								class="w-full bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white font-bold py-3 px-4 rounded-lg shadow-md hover:shadow-lg transition-all"
+							>
+								View Spool Details
+							</button>
+							<button
+								id="fc-action-transfer-location"
+								type="button"
+								class="w-full bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-600 text-white font-bold py-3 px-4 rounded-lg shadow-md hover:shadow-lg transition-all border-2 border-emerald-400 dark:border-emerald-300"
+							>
+								Transfer Location
+							</button>
+							<button
+								id="fc-action-cancel"
+								type="button"
+								class="w-full bg-gray-600 hover:bg-gray-700 dark:bg-gray-500 dark:hover:bg-gray-600 text-white font-bold py-3 px-4 rounded-lg transition-colors"
+							>
+								Cancel
+							</button>
+						</div>
+					</div>
+				</div>
+			</div>
+			<!-- Location Transfer Modal (single step) -->
+			<div
+				id="fc-location-modal"
+				class="fixed inset-0 z-[60] hidden"
+				role="dialog"
+				aria-modal="true"
+				aria-hidden="true"
+			>
+				<div class="absolute inset-0 bg-black/50" id="fc-location-modal-backdrop"></div>
+				<div class="relative h-full w-full flex items-center justify-center p-4">
+					<div class="w-full max-w-md rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-lg p-6">
+						<!-- Step 1: Location Input -->
+						<div id="fc-location-step-input" class="hidden">
+							<h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Transfer Location</h3>
+							<div class="mb-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+								<div class="text-sm text-gray-700 dark:text-gray-300">
+									<span class="font-semibold">Spool:</span> <span id="fc-location-spool-name">-</span>
+								</div>
+							</div>
+							<div class="space-y-4">
+								<div>
+									<label for="fc-location-input" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+										Location ID
+									</label>
+									<input
+										type="text"
+										id="fc-location-input"
+										placeholder="e.g., A5, printer_p1s_ams_2"
+										class="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
+									/>
+								</div>
+								<button
+									id="fc-location-scan-btn"
+									type="button"
+									class="w-full bg-purple-500 hover:bg-purple-700 dark:bg-purple-600 dark:hover:bg-purple-800 text-white font-bold py-2 px-4 rounded transition-colors"
+								>
+									Scan Location Tag
+								</button>
+								<div class="flex gap-2">
+									<button
+										id="fc-location-next-btn"
+										type="button"
+										class="flex-1 bg-blue-500 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-800 text-white font-bold py-2 px-4 rounded transition-colors"
+									>
+										Confirm Transfer
+									</button>
+									<button
+										id="fc-location-cancel-btn"
+										type="button"
+										class="flex-1 bg-gray-500 hover:bg-gray-700 dark:bg-gray-600 dark:hover:bg-gray-800 text-white font-bold py-2 px-4 rounded transition-colors"
+									>
+										Cancel
+									</button>
+								</div>
+							</div>
+						</div>
+						<!-- Step 2: Processing -->
+						<div id="fc-location-step-processing" class="hidden">
+							<div class="flex flex-col items-center py-8">
+								<svg class="w-12 h-12 text-blue-600 dark:text-blue-400 animate-spin mb-4" viewBox="0 0 24 24" fill="none">
+									<path
+										d="M12 2a10 10 0 0 1 10 10"
+										stroke="currentColor"
+										stroke-width="3"
+										stroke-linecap="round"
+									></path>
+								</svg>
+								<div class="text-lg font-semibold text-gray-900 dark:text-gray-100">Processing Transfer...</div>
+								<div class="mt-2 text-sm text-gray-500 dark:text-gray-400">Please wait</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
 			<script src={ "/static/js/nfc/constants.js?v=" + fmt.Sprintf(`%d`, time.Now().Unix()) }></script>
 			<script src={ "/static/js/nfc/cbor_min.js?v=" + fmt.Sprintf(`%d`, time.Now().Unix()) }></script>
 			<script src={ "/static/js/nfc/opt.js?v=" + fmt.Sprintf(`%d`, time.Now().Unix()) }></script>
+			<script src={ "/static/js/nfc/opt_translator.js?v=" + fmt.Sprintf(`%d`, time.Now().Unix()) }></script>
 			<script src={ "/static/js/nfc/filament_chamber_records.js?v=" + fmt.Sprintf(`%d`, time.Now().Unix()) }></script>
 			<script src={ "/static/js/nfc/tag_models.js?v=" + fmt.Sprintf(`%d`, time.Now().Unix()) }></script>
 			<script src={ "/static/js/nfc/webnfc.js?v=" + fmt.Sprintf(`%d`, time.Now().Unix()) }></script>
